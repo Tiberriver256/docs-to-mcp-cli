@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.2](https://github.com/Tiberriver256/docs-to-mcp-cli/compare/docs-to-mcp-cli-v1.1.1...docs-to-mcp-cli-v1.1.2) (2025-04-10)
+
+
+### Bug Fixes
+
+* add package.json:bin and shebang for npx ([8e69b30](https://github.com/Tiberriver256/docs-to-mcp-cli/commit/8e69b3059d568433c68cb605f1f6e6726cbb49d4))
+
 ## [1.1.1](https://github.com/Tiberriver256/docs-to-mcp-cli/compare/docs-to-mcp-cli-v1.1.0...docs-to-mcp-cli-v1.1.1) (2025-04-10)
 
 
