@@ -9,7 +9,11 @@ import { build } from 'esbuild';
  * @param packageName Name of the MCP server
  * @param outDir Output directory for the bundled server
  */
-export async function generateServer(docsPattern: string, packageName: string, outDir: string) {
+export async function generateServer(
+  docsPattern: string,
+  packageName: string,
+  outDir: string,
+) {
   const filePaths = await glob(docsPattern, { nodir: true, absolute: false });
 
   if (filePaths.length === 0) {
@@ -26,16 +30,21 @@ export async function generateServer(docsPattern: string, packageName: string, o
       const relativePath = path.relative(process.cwd(), filePath);
       docs[relativePath] = fs.readFileSync(filePath, 'utf-8');
     } catch (readError) {
-      console.warn(`⚠️ Skipping file ${filePath} due to read error: ${readError}`);
+      console.warn(
+        `⚠️ Skipping file ${filePath} due to read error: ${readError}`,
+      );
     }
   }
 
   // Escape backticks and backslashes in content for template literal safety
-  const escapeTemplateLiteral = (str: string) => 
+  const escapeTemplateLiteral = (str: string) =>
     str.replace(/\\/g, '\\\\').replace(/`/g, '\\`').replace(/\${/g, '\\${');
 
   const docsEntries = Object.entries(docs)
-    .map(([name, content]) => `  '${escapeTemplateLiteral(name)}': \`${escapeTemplateLiteral(content)}\``)
+    .map(
+      ([name, content]) =>
+        `  '${escapeTemplateLiteral(name)}': \`${escapeTemplateLiteral(content)}\``,
+    )
     .join(',\n');
 
   const serverCode = `
@@ -54,10 +63,18 @@ const SERVER_NAME = '${packageName}';
 const SERVER_VERSION = '1.0.0';
 const FUSE_OPTIONS = {
   keys: ['content'], // Search within the document content
-  threshold: 0.3,   // Fuzzy search sensitivity (0=exact, 1=match anything)
-  includeScore: false, // Set to true to see search scores
+  threshold: 0.1,    // Perfect match required (was 0.1)
+  includeScore: true, // Include score in results
+  includeMatches: true, // Include match information for highlighting
+  minMatchCharLength: 4, // Increased minimum match length (was 3)
+  findAllMatches: true,
+  ignoreLocation: false, // Consider location for more precise matching
+  useExtendedSearch: true, // Enable extended search for better pattern matching
+  distance: 20,     // Reduced maximum edit distance (was 100)
+  ignoreFieldNorm: true, // Don't penalize for field length
 };
-const LIST_DOCS_PREVIEW_LINES = 20;
+const LIST_DOCS_PREVIEW_CHARS = 90;
+const SEARCH_CONTEXT_CHARS = 200; // Characters to show before and after match
 
 // --- Initialize Fuse ---
 const fuse = new Fuse(
@@ -78,8 +95,8 @@ server.tool(
   {},
   async () => {
     const list = Object.entries(docs).map(([name, content]) => {
-      const lines = content.split('\\n').slice(0, LIST_DOCS_PREVIEW_LINES).join('\\n');
-      return \`--- \${name} ---\\n\${lines}\`;
+      const lines = content.slice(0, LIST_DOCS_PREVIEW_CHARS);
+      return \`--- \${name} ---\\n\${lines}...\`;
     }).join('\\n\\n');
 
     if (!list) {
@@ -113,8 +130,64 @@ server.tool(
     if (results.length === 0) {
       return { content: [{type: "text", text: \`No matches found for query: "\${query}"\`}] };
     }
-    const matches = results.map(result => result.item.name);
-    return { content: [{type: "text", text: \`Matches for "\${query}":\\n\${matches.join('\\n')}\`}] };
+    
+    // Generate highlighted preview for each match
+    const formattedResults = results.map(result => {
+      const { item, matches } = result;
+      
+      // Build previews with highlights for each match location
+      const previews = matches?.flatMap(match => {
+        if (match.key !== 'content' || !match.indices || match.indices.length === 0) {
+          return [];
+        }
+        
+        const content = item.content;
+        
+        // Process each occurrence (set of indices) for this match
+        return match.indices.map(([matchStart, matchEnd]) => {
+          // Calculate preview boundaries
+          const previewStart = Math.max(0, matchStart - SEARCH_CONTEXT_CHARS);
+          const previewEnd = Math.min(content.length, matchEnd + SEARCH_CONTEXT_CHARS + 1);
+          
+          // Extract text before, during, and after match
+          const beforeMatch = content.substring(previewStart, matchStart);
+          const matchText = content.substring(matchStart, matchEnd + 1);
+          const afterMatch = content.substring(matchEnd + 1, previewEnd);
+          
+          // If we truncated the beginning, add ellipsis
+          const previewPrefix = previewStart > 0 ? '...' : '';
+          // If we truncated the end, add ellipsis
+          const previewSuffix = previewEnd < content.length ? '...' : '';
+          
+          // Combine with highlighting
+          return \`\${previewPrefix}\${beforeMatch}**\${matchText}**\${afterMatch}\${previewSuffix}\`;
+        });
+      }).filter(Boolean);
+      
+      return {
+        file: item.name,
+        previews: previews || []
+      };
+    });
+    
+    // Format the response
+    // Count total number of matches across all files
+    const totalMatches = formattedResults.reduce((count, { previews }) => count + previews.length, 0);
+    let response = \`Found \${totalMatches} matches for "\${query}":\\n\\n\`;
+    
+    formattedResults.forEach(({ file, previews }) => {
+      response += \`File: \${file}\\n\`;
+      
+      if (previews.length > 0) {
+        previews.forEach((preview, i) => {
+          response += \`Match \${i+1}:\\n\${preview}\\n\\n\`;
+        });
+      } else {
+        response += \`(Match found but no preview available)\\n\\n\`;
+      }
+    });
+    
+    return { content: [{type: "text", text: response}] };
   }
 );
 
@@ -153,7 +226,7 @@ main();
       outfile: outputFilePath,
       platform: 'node',
       format: 'cjs', // CommonJS for broad Node compatibility
-      external: ['@modelcontextprotocol/sdk', 'zod', 'fuse.js'], // External dependencies 
+      external: ['@modelcontextprotocol/sdk', 'zod', 'fuse.js'], // External dependencies
       minify: false, // Keep readable for debugging
       sourcemap: false,
       logLevel: 'info',
@@ -164,20 +237,26 @@ main();
 
     // Create package.json for the output directory
     const packageJsonPath = path.join(outDir, 'package.json');
-    fs.writeFileSync(packageJsonPath, JSON.stringify({
-      name: packageName.toLowerCase().replace(/[^a-z0-9-]/g, '-'),
-      version: "1.0.0",
-      description: `MCP server for ${packageName} documentation`,
-      main: "index.js",
-      dependencies: {
-        "@modelcontextprotocol/sdk": "^1.9.0",
-        "fuse.js": "^7.1.0",
-        "zod": "^3.22.4"
-      }
-    }, null, 2));
-    
-    console.log(`Generated package.json in ${outDir}`);
+    fs.writeFileSync(
+      packageJsonPath,
+      JSON.stringify(
+        {
+          name: packageName.toLowerCase().replace(/[^a-z0-9-]/g, '-'),
+          version: '1.0.0',
+          description: `MCP server for ${packageName} documentation`,
+          main: 'index.js',
+          dependencies: {
+            '@modelcontextprotocol/sdk': '^1.9.0',
+            'fuse.js': '^7.1.0',
+            zod: '^3.22.4',
+          },
+        },
+        null,
+        2,
+      ),
+    );
 
+    console.log(`Generated package.json in ${outDir}`);
   } catch (bundleError) {
     console.error('❌ esbuild bundling failed:', bundleError);
     throw bundleError;
@@ -186,7 +265,9 @@ main();
     try {
       fs.unlinkSync(tempFilePath);
     } catch (cleanupError) {
-      console.warn(`⚠️ Could not delete temporary file ${tempFilePath}: ${cleanupError}`);
+      console.warn(
+        `⚠️ Could not delete temporary file ${tempFilePath}: ${cleanupError}`,
+      );
     }
   }
-} 
+}

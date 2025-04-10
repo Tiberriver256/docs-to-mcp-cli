@@ -1,25 +1,29 @@
-# MCP Server Maker
+# @tiberriver256/docs-to-mcp-cli
 
 A CLI tool that generates a self-contained, runnable MCP (Model Context Protocol) server that exposes markdown documentation via specific tools.
+
+## Project Goal
+
+Create a Node.js CLI tool that generates a self-contained, runnable MCP server (`dist/index.js`) exposing markdown documentation via specific tools. The generated server will make your documentation available to AI assistants through the Model Context Protocol.
 
 ## Installation
 
 You can install the tool globally:
 
 ```bash
-npm install -g mcp-server-maker
+npm install -g @tiberriver256/docs-to-mcp-cli
 ```
 
 Or use it directly with npx:
 
 ```bash
-npx mcp-server-maker --docs "path/to/docs/**/*.md" --packageName MyDocsServer
+npx @tiberriver256/docs-to-mcp-cli --docs "path/to/docs/**/*.md" --packageName MyDocsServer
 ```
 
 ## Usage
 
 ```bash
-make-mcp-docs-server --docs <pattern> --packageName <name> [--outDir <dir>]
+docs-to-mcp-cli --docs <pattern> --packageName <name> [--outDir <dir>]
 ```
 
 ### Options
@@ -32,7 +36,7 @@ make-mcp-docs-server --docs <pattern> --packageName <name> [--outDir <dir>]
 
 ```bash
 # Generate a server from all markdown files in the docs directory
-make-mcp-docs-server --docs "docs/**/*.md" --packageName ProjectDocs
+docs-to-mcp-cli --docs "docs/**/*.md" --packageName ProjectDocs
 
 # Run the generated server
 node dist/index.js
@@ -59,4 +63,4 @@ npm run build
 
 # Link for local development
 npm link
-``` 
+```

@@ -1,23 +1,92 @@
 {
-  "name": "mcp-server-maker",
+  "name": "@tiberriver256/docs-to-mcp-cli",
   "version": "1.0.0",
   "description": "CLI tool to generate MCP servers from markdown documentation",
   "main": "cli/index.js",
   "bin": {
-    "make-mcp-docs-server": "cli/index.js"
+    "docs-to-mcp-cli": "cli/index.js"
   },
   "scripts": {
     "build": "tsc",
     "start": "node cli/index.js",
     "dev": "tsc -w",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "format": "prettier --write \"**/*.{ts,js,json,md}\"",
+    "format:check": "prettier --check \"**/*.{ts,js,json,md}\"",
+    "prepare": "husky install",
+    "commit": "cz",
+    "test": "echo \"No tests specified\" && exit 0"
+  },
+  "release": {
+    "branches": [
+      "main"
+    ],
+    "plugins": [
+      "@semantic-release/commit-analyzer",
+      "@semantic-release/release-notes-generator",
+      "@semantic-release/changelog",
+      "@semantic-release/npm",
+      "@semantic-release/github"
+    ],
+    "preset": "angular",
+    "releaseRules": [
+      {
+        "type": "feat",
+        "release": "minor"
+      },
+      {
+        "type": "fix",
+        "release": "patch"
+      },
+      {
+        "type": "docs",
+        "release": "patch"
+      },
+      {
+        "type": "style",
+        "release": "patch"
+      },
+      {
+        "type": "refactor",
+        "release": "patch"
+      },
+      {
+        "type": "perf",
+        "release": "patch"
+      },
+      {
+        "type": "test",
+        "release": "patch"
+      },
+      {
+        "type": "chore",
+        "release": "patch"
+      }
+    ]
+  },
+  "lint-staged": {
+    "*.{ts,js,json,md}": [
+      "prettier --write"
+    ]
+  },
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@commitlint/cli": "^19.8.0",
+    "@commitlint/config-conventional": "^19.8.0",
     "@types/glob": "^8.1.0",
     "@types/node": "^22.14.0",
+    "commitizen": "^4.3.1",
+    "cz-conventional-changelog": "^3.3.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.5.0",
+    "prettier": "^3.0.0",
     "typescript": "^5.8.3"
   },
   "dependencies": {

@@ -13,7 +13,7 @@ This is a sample markdown file to test the MCP server generator.
 ```javascript
 // This is a sample code block
 function helloWorld() {
-  console.log("Hello, world!");
+  console.log('Hello, world!');
 }
 ```
 
@@ -21,4 +21,4 @@ function helloWorld() {
 
 1. Create more documentation files
 2. Run the MCP server
-3. Connect to it using an MCP client 
+3. Connect to it using an MCP client
