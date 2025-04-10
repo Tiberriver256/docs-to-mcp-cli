@@ -48,6 +48,8 @@ export async function generateServer(
     .join(',\n');
 
   const serverCode = `
+#!/usr/bin/env node
+
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import Fuse from 'fuse.js';
@@ -245,6 +247,9 @@ main();
           version: '1.0.0',
           description: `MCP server for ${packageName} documentation`,
           main: 'index.js',
+          bin: {
+            [packageName.toLowerCase().replace(/[^a-z0-9-]/g, '-')]: 'index.js'
+          },
           dependencies: {
             '@modelcontextprotocol/sdk': '^1.9.0',
             'fuse.js': '^7.1.0',
