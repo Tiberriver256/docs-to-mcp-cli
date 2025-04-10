@@ -1,0 +1,10 @@
+node_modules/
+.github/
+.husky/
+src/
+test-docs/
+mcp-server-azure-devops/
+.prettierrc
+.gitignore
+commitlint.config.js
+dist/ 
