@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.1.1](https://github.com/Tiberriver256/docs-to-mcp-cli/compare/docs-to-mcp-cli-v1.1.0...docs-to-mcp-cli-v1.1.1) (2025-04-10)
+
+
+### Bug Fixes
+
+* ensure CLI version matches package.json ([43cf1d6](https://github.com/Tiberriver256/docs-to-mcp-cli/commit/43cf1d62d40a768a8be86fcbcf00f603c03690e6))
+
 ## [1.1.0](https://github.com/Tiberriver256/docs-to-mcp-cli/compare/docs-to-mcp-cli-v1.0.0...docs-to-mcp-cli-v1.1.0) (2025-04-10)
 
 
