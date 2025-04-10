@@ -2,13 +2,20 @@
 
 import { Command } from 'commander';
 import { generateServer } from './generator';
+import { readFileSync } from 'fs';
+import { join } from 'path';
+
+// Dynamically get version from package.json
+const packageJson = JSON.parse(
+  readFileSync(join(__dirname, '..', 'package.json'), 'utf8'),
+);
 
 const program = new Command();
 
 program
   .name('docs-to-mcp-cli')
   .description('Generates an MCP server from markdown documentation files.')
-  .version('1.0.0');
+  .version(packageJson.version);
 
 program
   .requiredOption(
