@@ -66,16 +66,21 @@ const SERVER_NAME = '${packageName}';
 const SERVER_VERSION = '1.0.0';
 const TOOL_NAME = '${toolName || ''}'; // Injected by the CLI
 const FUSE_OPTIONS = {
-  keys: ['content'], // Search within the document content
-  threshold: 0.1,    // Perfect match required (was 0.1)
-  includeScore: true, // Include score in results
-  includeMatches: true, // Include match information for highlighting
-  minMatchCharLength: 4, // Increased minimum match length (was 3)
-  findAllMatches: true,
-  ignoreLocation: false, // Consider location for more precise matching
+  keys: [
+    { name: 'content', weight: 1.0 }, // Primary search target: file content
+    { name: 'name', weight: 0.5 }     // Secondary target: file path/name, lower weight
+  ],
+  threshold: 0.4,          // Loosen threshold for better fuzzy matching
+  includeScore: true,      // Include score in results
+  includeMatches: true,    // Include match information for highlighting
+  minMatchCharLength: 3,   // Slightly lower minimum length for better matches
+  findAllMatches: true,    // Find all matches for comprehensive results
+  ignoreLocation: true,    // Search anywhere, don't penalize location
   useExtendedSearch: true, // Enable extended search for better pattern matching
-  distance: 20,     // Reduced maximum edit distance (was 100)
-  ignoreFieldNorm: true, // Don't penalize for field length
+  ignoreFieldNorm: true,   // Don't penalize for field length
+  shouldSort: true,        // Explicitly sort by score
+  isCaseSensitive: false,  // Case insensitive search
+  ignoreDiacritics: true,  // Ignore diacritics for international text
 };
 const LIST_DOCS_PREVIEW_CHARS = 90;
 const SEARCH_CONTEXT_CHARS = 200; // Characters to show before and after match
