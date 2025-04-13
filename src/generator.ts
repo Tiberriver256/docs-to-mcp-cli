@@ -8,11 +8,13 @@ import { build } from 'esbuild';
  * @param docsPattern Glob pattern to find markdown files
  * @param packageName Name of the MCP server
  * @param outDir Output directory for the bundled server
+ * @param toolName Optional name of the tool/package/library being documented (used in tool descriptions)
  */
 export async function generateServer(
   docsPattern: string,
   packageName: string,
   outDir: string,
+  toolName?: string,
 ) {
   const filePaths = await glob(docsPattern, { nodir: true, absolute: false });
 
@@ -47,8 +49,7 @@ export async function generateServer(
     )
     .join(',\n');
 
-  const serverCode = `
-#!/usr/bin/env node
+  const serverCode = `#!/usr/bin/env node
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
@@ -63,6 +64,7 @@ ${docsEntries}
 // --- Server Configuration ---
 const SERVER_NAME = '${packageName}';
 const SERVER_VERSION = '1.0.0';
+const TOOL_NAME = '${toolName || ''}'; // Injected by the CLI
 const FUSE_OPTIONS = {
   keys: ['content'], // Search within the document content
   threshold: 0.1,    // Perfect match required (was 0.1)
@@ -94,7 +96,7 @@ const server = new McpServer({
 
 server.tool(
   'list_docs',
-  z.object({}).describe('Lists available documents with previews.'),
+  z.object({}).describe(TOOL_NAME ? \`Lists available documents for \${TOOL_NAME} with previews.\` : 'Lists available documents with previews.'),
   async () => {
     const list = Object.entries(docs).map(([name, content]) => {
       const lines = content.slice(0, LIST_DOCS_PREVIEW_CHARS);
@@ -111,8 +113,8 @@ server.tool(
 server.tool(
   'get_doc',
   z.object({
-    name: z.string().describe('The relative path of the document (e.g., "test-docs/installation.md").')
-  }).describe('Retrieves the full content of a specific document by its relative path.'),
+    name: z.string().describe(TOOL_NAME ? \`The relative path of the document for \${TOOL_NAME} (e.g., "test-docs/installation.md").\` : 'The relative path of the document (e.g., "test-docs/installation.md").')
+  }).describe(TOOL_NAME ? \`Retrieves the full content of a specific document for \${TOOL_NAME} by its relative path.\` : 'Retrieves the full content of a specific document by its relative path.'),
   async ({ name }) => {
     const content = docs[name];
     if (content === undefined) { // Check for undefined explicitly
@@ -126,7 +128,7 @@ server.tool(
   'search_docs',
   z.object({
     query: z.string().describe('The search term or query.')
-  }).describe('Searches all documents for a given query string using fuzzy matching.'),
+  }).describe(TOOL_NAME ? \`Searches all \${TOOL_NAME} documents for a given query string using fuzzy matching.\` : 'Searches all documents for a given query string using fuzzy matching.'),
   async ({ query }) => {
     const results = fuse.search(query);
     if (results.length === 0) {

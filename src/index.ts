@@ -31,11 +31,23 @@ program
     'Output directory for the bundled server',
     'dist',
   )
+  .option(
+    '-t, --toolName <name>',
+    'Name of the tool/package/library being documented (used in tool descriptions)',
+  )
   .action(async (options) => {
     try {
       console.log(`Scanning for files matching: ${options.docs}`);
       console.log(`Generating server named: ${options.packageName}`);
-      await generateServer(options.docs, options.packageName, options.outDir);
+      if (options.toolName) {
+        console.log(`Using tool name: ${options.toolName}`);
+      }
+      await generateServer(
+        options.docs,
+        options.packageName,
+        options.outDir,
+        options.toolName,
+      );
       console.log(
         `✅ MCP server successfully generated in ${options.outDir}/index.js`,
       );
