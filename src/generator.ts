@@ -94,7 +94,7 @@ const server = new McpServer({
 
 server.tool(
   'list_docs',
-  {},
+  z.object({}).describe('Lists available documents with previews.'),
   async () => {
     const list = Object.entries(docs).map(([name, content]) => {
       const lines = content.slice(0, LIST_DOCS_PREVIEW_CHARS);
@@ -110,9 +110,9 @@ server.tool(
 
 server.tool(
   'get_doc',
-  {
-    name: z.string().describe('The relative path of the document (e.g., "src/readme.md").')
-  },
+  z.object({
+    name: z.string().describe('The relative path of the document (e.g., "test-docs/installation.md").')
+  }).describe('Retrieves the full content of a specific document by its relative path.'),
   async ({ name }) => {
     const content = docs[name];
     if (content === undefined) { // Check for undefined explicitly
@@ -124,9 +124,9 @@ server.tool(
 
 server.tool(
   'search_docs',
-  {
+  z.object({
     query: z.string().describe('The search term or query.')
-  },
+  }).describe('Searches all documents for a given query string using fuzzy matching.'),
   async ({ query }) => {
     const results = fuse.search(query);
     if (results.length === 0) {
@@ -248,7 +248,7 @@ main();
           description: `MCP server for ${packageName} documentation`,
           main: 'index.js',
           bin: {
-            [packageName.toLowerCase().replace(/[^a-z0-9-]/g, '-')]: 'index.js'
+            [packageName.toLowerCase().replace(/[^a-z0-9-]/g, '-')]: 'index.js',
           },
           dependencies: {
             '@modelcontextprotocol/sdk': '^1.9.0',
