@@ -1,5 +1,14 @@
 # Changelog
 
+## [1.2.0](https://github.com/Tiberriver256/docs-to-mcp-cli/compare/docs-to-mcp-cli-v1.1.2...docs-to-mcp-cli-v1.2.0) (2025-04-13)
+
+
+### Features
+
+* add tool descriptions to generated MCP server ([c3ed767](https://github.com/Tiberriver256/docs-to-mcp-cli/commit/c3ed767d8fcc6a7363920fe2e6e0fa8484f61f91))
+* optimize Fuse.js configuration for search_docs tool ([4a4ba2f](https://github.com/Tiberriver256/docs-to-mcp-cli/commit/4a4ba2f122fbc39e3084568bf59cd092333844f3))
+* use package name in tool descriptions for generated MCP server ([b642b0f](https://github.com/Tiberriver256/docs-to-mcp-cli/commit/b642b0f936b2e12ce27066f462e0600f44223ddd))
+
 ## [1.1.2](https://github.com/Tiberriver256/docs-to-mcp-cli/compare/docs-to-mcp-cli-v1.1.1...docs-to-mcp-cli-v1.1.2) (2025-04-10)
 
 ### Bug Fixes
