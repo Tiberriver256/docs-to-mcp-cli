@@ -15,7 +15,8 @@
     "format:check": "prettier --check \"**/*.{ts,js,json,md}\"",
     "prepare": "husky install",
     "commit": "cz",
-    "test": "echo \"No tests specified\" && exit 0"
+    "test": "echo \"No tests specified\" && exit 0",
+    "test:e2e": "node --experimental-strip-types --test test/e2e.test.ts"
   },
   "release": {
     "branches": [
