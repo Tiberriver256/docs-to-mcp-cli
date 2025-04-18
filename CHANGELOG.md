@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/Tiberriver256/docs-to-mcp-cli/compare/docs-to-mcp-cli-v1.2.0...docs-to-mcp-cli-v1.2.1) (2025-04-18)
+
+
+### Bug Fixes
+
+* update CLI command path in e2e tests and normalize docs pattern in generator ([79f91a7](https://github.com/Tiberriver256/docs-to-mcp-cli/commit/79f91a77c7e947263761dd562112a46429fd6e72))
+
 ## [1.2.0](https://github.com/Tiberriver256/docs-to-mcp-cli/compare/docs-to-mcp-cli-v1.1.2...docs-to-mcp-cli-v1.2.0) (2025-04-13)
 
 ### Features
