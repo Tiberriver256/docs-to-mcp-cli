@@ -2,6 +2,7 @@ import { glob } from 'glob';
 import * as fs from 'fs';
 import * as path from 'path';
 import { build } from 'esbuild';
+import { z } from 'zod';
 
 /**
  * Generate an MCP server that serves the content of markdown files
@@ -16,7 +17,8 @@ export async function generateServer(
   outDir: string,
   toolName?: string,
 ) {
-  const filePaths = await glob(docsPattern, { nodir: true, absolute: false });
+  const normalizedPattern = docsPattern.replace(/\\/g, '/');
+  const filePaths = await glob(normalizedPattern, { nodir: true });
 
   if (filePaths.length === 0) {
     console.warn(`⚠️ No files found matching pattern: ${docsPattern}`);
@@ -101,7 +103,8 @@ const server = new McpServer({
 
 server.tool(
   'list_docs',
-  z.object({}).describe(TOOL_NAME ? \`Lists available documents for \${TOOL_NAME} with previews.\` : 'Lists available documents with previews.'),
+  TOOL_NAME ? \`Lists available documents for \${TOOL_NAME} with previews.\` : 'Lists available documents with previews.',
+  {},
   async () => {
     const list = Object.entries(docs).map(([name, content]) => {
       const lines = content.slice(0, LIST_DOCS_PREVIEW_CHARS);
@@ -117,9 +120,10 @@ server.tool(
 
 server.tool(
   'get_doc',
-  z.object({
+  TOOL_NAME ? \`Retrieves the full content of a specific document for \${TOOL_NAME} by its relative path.\` : 'Retrieves the full content of a specific document by its relative path.',
+  {
     name: z.string().describe(TOOL_NAME ? \`The relative path of the document for \${TOOL_NAME} (e.g., "test-docs/installation.md").\` : 'The relative path of the document (e.g., "test-docs/installation.md").')
-  }).describe(TOOL_NAME ? \`Retrieves the full content of a specific document for \${TOOL_NAME} by its relative path.\` : 'Retrieves the full content of a specific document by its relative path.'),
+  },
   async ({ name }) => {
     const content = docs[name];
     if (content === undefined) { // Check for undefined explicitly
@@ -131,9 +135,10 @@ server.tool(
 
 server.tool(
   'search_docs',
-  z.object({
+  TOOL_NAME ? \`Searches all \${TOOL_NAME} documents for a given query string using fuzzy matching.\` : 'Searches all documents for a given query string using fuzzy matching.',
+  {
     query: z.string().describe('The search term or query.')
-  }).describe(TOOL_NAME ? \`Searches all \${TOOL_NAME} documents for a given query string using fuzzy matching.\` : 'Searches all documents for a given query string using fuzzy matching.'),
+  },
   async ({ query }) => {
     const results = fuse.search(query);
     if (results.length === 0) {
